@@ -2,4 +2,4 @@
 target = "x86_64-pc-windows-gnu"
 
 [term]
-quiet = true
+quiet = false
