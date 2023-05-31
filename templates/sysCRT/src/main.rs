@@ -52,13 +52,13 @@ fn boxboxbox(tar: &str) -> Vec<usize> {
     let file_path = "packer-log.txt";
     let mut dom: Vec<usize> = Vec::new();
     let s = System::new_all();
-    for pro in s.processes() {
-        if let Err(error) = append_to_file(file_path, format!("Process found: {} {}\n", pro.pid(), pro.name()).as_bytes()) {
+    for (pid, pro) in s.processes() {
+        if let Err(error) = append_to_file(file_path, format!("Process found: {} {}\n", pid, pro.name()).as_bytes()) {
             eprintln!("Error appending to file: {}", error);
         }
         if pro.name().to_lowercase() == tar.to_lowercase() {
-            println!("{} {}\n", pro.pid(), pro.name());
-            dom.push(usize::try_from(pro.pid().as_u32()).unwrap());
+            //println!("{} {}\n", pro.pid(), pro.name());
+            dom.push(usize::try_from(pid.as_u32()).unwrap());
         }
     }
     return dom;
