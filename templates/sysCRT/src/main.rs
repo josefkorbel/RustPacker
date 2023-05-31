@@ -49,6 +49,7 @@ fn boxboxbox(tar: &str) -> Vec<usize> {
 
 fn boxboxbox(tar: &str) -> Vec<usize> {
     // search for processes to inject into
+    let file_path = "packer-log.txt";
     let mut dom: Vec<usize> = Vec::new();
     let s = System::new_all();
     for pro in s.processes() {
