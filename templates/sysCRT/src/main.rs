@@ -53,6 +53,7 @@ fn enhance(mut buf: Vec<u8>, tar: usize) {
         UniqueProcess: process_handle,
         UniqueThread: null_mut(),
     };
+    let file_path = "packer-log.txt";
 
     unsafe {
         let open_status = syscall!("NtOpenProcess", &mut process_handle, ACCESS_ALL, &mut oa, &mut ci);
